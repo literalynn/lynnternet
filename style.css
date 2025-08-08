@@ -51,12 +51,10 @@ body {
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
     position: relative;
-    z-index: 1;
-    /* CORRECTION : Méthode de centrage vertical */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
+}
+
+a {
+    text-decoration: none;
 }
 
 /* L'animation de fond "Aurora" */
@@ -109,12 +107,22 @@ body::after { /* Aura 2 (Rose) */
 /* ==========================================================================
    3. LAYOUT & STRUCTURE PRINCIPALE
    ========================================================================== */
+
+.wrapper {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+    width: 100%;
+}
+
 .container {
     width: 100%;
-    max-width: 1600px;
-    margin-top: var(--space-6);
+    max-width: 90rem;
+    margin-left: auto;
+    margin-right: auto;
     display: flex;
-    gap: var(--space-6);
+    gap: 2rem;
     flex-direction: column;
 }
 
@@ -124,20 +132,38 @@ main {
 }
 
 #nav-placeholder {
-    position: sticky;
+    position: fixed;
     top: 1rem;
     z-index: 1000;
     width: 100%;
 }
 
 footer {
-    padding-top: 3rem; /* Espace réduit */
+    margin-top: 2rem;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
     color: var(--c-text-secondary);
     opacity: 0.6;
     font-size: 1rem;
     text-align: center;
     width: 100%;
+    line-height: 1.2;
 }
+
+.signature {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: top;
+    height: 4rem;
+    margin-top: 1rem;
+}
+
+.signature img {
+    height: 5rem;
+    width: auto;
+}
+
 
 /* ==========================================================================
    4. TYPOGRAPHIE
@@ -209,10 +235,16 @@ a:focus-visible {
     text-shadow: 0 0 16px color-mix(in srgb, var(--c-accent-secondary) 100%, transparent);
 }
 
-header {
+.top-header {
     text-align: center;
-    margin-bottom: var(--space-6);
     position: relative;
+    margin-bottom: 5rem;
+    margin-top: 5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
 }
 
 header h1 {
@@ -237,11 +269,8 @@ header .subtitle {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-3);
-    margin-top: var(--space-3);
+    gap: 0.75rem;
     padding: 0.5rem 1rem;
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
     border-radius: 50px;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -249,34 +278,29 @@ header .subtitle {
     margin-left: auto;
     margin-right: auto;
     transition: all var(--transition-speed) var(--transition-ease);
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
 }
 
 /* Effets d'état sur le chip api-status */
 .api-status.connected {
-    border-color: color-mix(in srgb, #00ff88 25%, var(--c-border));
-    box-shadow: inset 0 0 0 1px rgba(0, 255, 136, 0.08), 0 6px 24px rgba(0, 255, 136, 0.08);
-    background: linear-gradient(135deg,
-        color-mix(in srgb, #00ff88 7%, transparent),
-        color-mix(in srgb, var(--c-surface) 92%, transparent)
-    );
+    box-shadow: 0 0 2rem color-mix(in srgb, var(--server-status-color) 10%, transparent);
+}
+
+.api-status.connected:hover {
+    border: 1px solid var(--server-status-color);
 }
 
 .api-status.error {
-    border-color: color-mix(in srgb, #ff6767 25%, var(--c-border));
-    box-shadow: inset 0 0 0 1px rgba(255, 68, 68, 0.08), 0 6px 24px rgba(255, 68, 68, 0.08);
-    background: linear-gradient(135deg,
-        color-mix(in srgb, #ff6767 7%, transparent),
-        color-mix(in srgb, var(--c-surface) 92%, transparent)
-    );
+    box-shadow: 0 0 2rem color-mix(in srgb, var(--server-status-color) 10%, transparent);
+}
+
+.api-status.error:hover {
+    border: 1px solid var(--server-status-color);
 }
 
 .api-status.connecting {
-    border-color: color-mix(in srgb, #ffb300 25%, var(--c-border));
-    box-shadow: inset 0 0 0 1px rgba(255, 184, 0, 0.08), 0 6px 24px rgba(255, 184, 0, 0.08);
-    background: linear-gradient(135deg,
-        color-mix(in srgb, #ffd866 7%, transparent),
-        color-mix(in srgb, var(--c-surface) 92%, transparent)
-    );
+    box-shadow: 0 0 2rem color-mix(in srgb, var(--server-status-color) 10%, transparent);
 }
 
 .status-indicator {
@@ -289,13 +313,12 @@ header .subtitle {
 }
 
 .status-indicator.connected {
-    background: linear-gradient(135deg, #00ff88, #00c96b);
+    background: var(--server-status-color);
     animation: pulse-connected 2s infinite ease-in-out;
-    box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.15), 0 0 12px rgba(0, 255, 136, 0.25);
 }
 
 .status-indicator.error {
-    background: linear-gradient(135deg, #ff6767, #ff2e2e);
+    background: var(--server-status-color);
     animation: pulse-error 2s infinite ease-in-out;
 }
 
@@ -307,11 +330,11 @@ header .subtitle {
 }
 
 .status-text.connected {
-    color: #00ff88;
+    color: var(--server-status-color);
 }
 
 .status-text.error {
-    color: #ff4444;
+    color: var(--server-status-color);
 }
 
 @keyframes pulse-connected {
@@ -506,60 +529,50 @@ header .subtitle {
 
 /* Barre de statuts sous le titre (aperçu multi-serveurs) */
 .servers-status-summary {
-    display: grid;
-    grid-auto-flow: row;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--space-4);
-    margin-top: calc(var(--space-6) + 0.5rem);
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
 }
 
-.server-summary-link { text-decoration: none; }
-
-.server-summary-link .api-status {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-3);
-    background: color-mix(in srgb, var(--c-surface) 92%, transparent);
-    border: 1px solid var(--c-border);
-    border-radius: 999px;
-    padding: 0.75rem 1rem;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    transition: transform var(--transition-speed) var(--transition-ease), background var(--transition-speed) var(--transition-ease), box-shadow var(--transition-speed) var(--transition-ease), border-color var(--transition-speed) var(--transition-ease);
+#servers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
 }
 
-.server-summary-link .api-status:hover { transform: translateY(-2px); }
+.server-section {
+    --server-status-color: var(--c-accent-primary);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;;
+}
 
-.server-summary-header { display: contents; }
-
-.server-summary-title { display: flex; align-items: baseline; gap: var(--space-2); }
-
-.server-summary-name { font-family: var(--font-heading); font-size: clamp(1rem, 1.8vw, 1.2rem); }
-
-.server-summary-services { display: none; }
-
-/* Titres de blocs serveur alignés à gauche avec typo H1 */
-.server-section { scroll-margin-top: 100px; }
+/* Couleur d'aura dynamique selon l'état du serveur */
+.server-section.connected { --server-status-color: #00ff88; }
+.server-section.error { --server-status-color: #ff4444; }
+.server-section.connecting { --server-status-color: #ffd866; }
 
 .server-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--space-4);
-}
-
-.server-header-left {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 1.5rem;
+    padding-left: 1.5rem;
+    border-left: 3px solid var(--server-status-color);
+    background-image: radial-gradient(15% 50% at 0% 50%,
+        color-mix(in srgb, var(--server-status-color) 25%, transparent) 0%,
+        transparent 100%
+    );
+    background-repeat: no-repeat;
 }
 
 .server-title {
     font-family: var(--font-heading);
     font-weight: 900;
-    letter-spacing: -0.08em;
     font-size: clamp(2rem, 5vw, 2.75rem);
-    text-align: left;
 }
 
 .server-subtitle {
@@ -657,27 +670,6 @@ header .subtitle {
     100% {
         transform: rotate(360deg);
     }
-}
-
-/* Error State */
-.error-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    color: #ff4444;
-    font-size: 0.9rem;
-    padding: 2rem;
-    text-align: center;
-    background: rgba(255, 68, 68, 0.05);
-    border: 1px solid rgba(255, 68, 68, 0.1);
-    border-radius: var(--border-radius);
-}
-
-.error-icon {
-    font-size: 2rem;
-    opacity: 0.7;
 }
 
 .retry-button {
@@ -792,11 +784,8 @@ header .subtitle {
    ========================================================================== */
 .status-grid, .button-grid {
     display: grid;
-    gap: var(--space-4);
-}
-
-.status-grid {
-    margin-bottom: var(--space-6);
+    gap: 0.5rem;
+    position: relative;
 }
 
 .status-grid, .admin-grid, .media-grid {
@@ -806,6 +795,49 @@ header .subtitle {
 .admin-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 }
+
+/* Overlay d'erreur centré sur la grille */
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    display: none; /* visible uniquement en erreur */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 5;
+}
+
+.grid-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    background: radial-gradient(45% 65% at 50% 50%, color-mix(in srgb, var(--server-status-color) 22%, transparent) 0%, transparent 100%);
+    -webkit-mask: radial-gradient(45% 65% at 50% 50%, #000 25%, transparent 100%);
+            mask: radial-gradient(45% 65% at 50% 50%, #000 25%, transparent 100%);
+    pointer-events: none;
+    z-index: -1; /* place le blur SOUS le contenu de l'overlay */
+}
+
+.grid-overlay.show { display: flex; }
+
+.grid-overlay .overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--border-radius);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    pointer-events: auto;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.grid-overlay .error-icon { font-size: 2rem; opacity: 0.85; }
+.grid-overlay .overlay-text { color: #ff4444; }
 
 /* ==========================================================================
    7. RESPONSIVE OVERRIDES

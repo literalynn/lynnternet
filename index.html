@@ -15,25 +15,27 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div id="nav-placeholder"></div>
+    <div id="nav-placeholder"></div>
 
-        <header>
-            <h1>Lynn's Cloud</h1>
-            <div id="servers-status-summary" class="servers-status-summary"></div>
-        </header>
-
-        <main>
-            <!-- Les sections de chaque serveur seront injectées dynamiquement par multiServer.js -->
-            <div id="servers-container"></div>
-        </main>
-
-        <div id="footer-placeholder"></div>
+    <div class="wrapper">
+        <div class="container">
+            <header class="top-header">
+                <h1>Lynn's Cloud</h1>
+                <div id="servers-status-summary" class="servers-status-summary"></div>
+            </header>
+            <main>
+                <!-- Les sections de chaque serveur seront injectées dynamiquement par multiServer.js -->
+                <div id="servers-container"></div>
+            </main>
+        </div>
+        <div class="container">
+            <div id="footer-placeholder"></div>
+        </div>
     </div>
-    
+
     <script src="main.js" defer></script>
-    <!-- Remplacé script.js par multiServer.js pour supporter plusieurs serveurs -->
     <script src="multiServer.js"></script>
+
     <noscript>
         <div style="max-width: 800px; margin: 2rem auto; padding: 1rem 1.25rem; border-radius: 12px; background: #1a1a1a; color: #fff; text-align: center;">
             JavaScript est requis pour afficher les statistiques en direct.

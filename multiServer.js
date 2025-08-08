@@ -9,24 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
         // Mettez à jour `api` lorsque vos endpoints seront prêts.
         {
             id: 'ltn1',
-            name: 'LTN-1',
+            name: 'ltn1',
             api: 'https://api.lynnternet.cloud/api/stats',
-            description: 'Médias & automatisation',
+            description: 'Plex media server',
             services: 'Plex, Overseerr, Radarr/Sonarr, Prowlarr, Huntarr, qBit, Bazarr'
         },
         {
             id: 'ltn2',
-            name: 'LTN-2',
-            api: 'https://api.lynnternet.cloud/api/stats',
-            description: 'Jeux & orchestrateur',
-            services: 'Pterodactyl (serveurs de jeu)'
+            name: 'ltn2',
+            api: '',
+            description: 'Game servers',
+            services: 'Pterodactyl'
         },
         {
-            id: 'ltn3',
-            name: 'LTN-3',
-            api: 'https://api.lynnternet.cloud/api/stats',
-            description: 'Réseau & proxy',
-            services: 'Nginx VPS / reverse proxies'
+            id: 'ltn0',
+            name: 'ltn0',
+            api: '',
+            description: 'VPS',
+            services: 'Nginx remote IP proxies, VPN bridge'
         }
     ];
 
@@ -37,13 +37,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------
     // 2. Plugins & helpers (issus du script d'origine)
     // ------------------------------
-    function createGradient(ctx, color) {
-        const gradient = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
-        const colorStart = color.replace('rgb', 'rgba').replace(')', ', 0.4)');
-        const colorEnd   = color.replace('rgb', 'rgba').replace(')', ', 0.03)');
-        gradient.addColorStop(0, colorStart);
-        gradient.addColorStop(1, colorEnd);
-        return gradient;
+    function makeAlpha(color, alpha) {
+        return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    }
+
+    function createBiaxialFillPattern(chart, area, color, options = {}) {
+        const topAlpha = options.topAlpha ?? 0.25;   // opacité en haut
+        const fadeRatio = options.fadeRatio ?? 0.4;  // position où le fade horizontal atteint 100%
+        const off = document.createElement('canvas');
+        // Utiliser la taille complète du canvas pour éviter les décalages sans setTransform
+        off.width = chart.canvas.width;
+        off.height = chart.canvas.height;
+        const g = off.getContext('2d');
+
+        // Dégradé vertical (haut -> bas)
+        const vGrad = g.createLinearGradient(area.left, area.top, area.left, area.bottom);
+        vGrad.addColorStop(0, makeAlpha(color, topAlpha));
+        vGrad.addColorStop(1, makeAlpha(color, 0));
+        g.fillStyle = vGrad;
+        g.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
+
+        // Masque horizontal (gauche -> droite)
+        g.globalCompositeOperation = 'destination-in';
+        const hMask = g.createLinearGradient(area.left, area.top, area.right, area.top);
+        hMask.addColorStop(0, 'rgba(0,0,0,0)');
+        hMask.addColorStop(Math.min(Math.max(fadeRatio, 0), 1), 'rgba(0,0,0,1)');
+        hMask.addColorStop(1, 'rgba(0,0,0,1)');
+        g.fillStyle = hMask;
+        g.fillRect(area.left, area.top, area.right - area.left, area.bottom - area.top);
+
+        const pattern = chart.ctx.createPattern(off, 'no-repeat');
+        return pattern;
     }
 
     // ---- Glow Line Plugin ----
@@ -185,17 +209,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return `
             <section class="server-section" id="${server.id}-section">
                 <header class="server-header">
-                    <div class="server-header-left">
-                        <h2 class="server-title">${server.name}</h2>
-                        <p class="server-subtitle">${server.description} · <span class="server-services">${server.services}</span></p>
-                    </div>
-                    <div class="api-status" id="${server.id}-api-status" aria-live="polite">
-                        <div class="status-indicator" id="${server.id}-status-indicator"></div>
-                        <span class="status-text" aria-hidden="true">${server.name}</span>
-                        <span class="status-text" id="${server.id}-status-text">Connexion...</span>
-                    </div>
+                    <h2 class="server-title">${server.name}</h2>
+                    <p class="server-subtitle">${server.description}</br><span class="server-services">${server.services}</span></p>
                 </header>
-                <div class="status-grid">
+                <div class="status-grid" id="${server.id}-status-grid">
+                    <div class="grid-overlay" id="${server.id}-grid-overlay" aria-live="polite" aria-hidden="true">
+                        <div class="overlay-content">
+                            <div class="error-icon">⚠️</div>
+                            <div class="overlay-text">Impossible de récupérer les données</div>
+                            <button class="retry-button" data-server-id="${server.id}">Réessayer</button>
+                        </div>
+                    </div>
                     <!-- CPU -->
                     <div class="stat-card">
                         <div class="card-title">
@@ -254,10 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function createStatusSummaryHTML(server) {
         return `
             <a class="server-summary-link" href="#${server.id}-section" aria-label="Aller au serveur ${server.name}">
-                <div class="api-status" id="${server.id}-status-summary">
-                    <div class="status-indicator" id="${server.id}-summary-indicator"></div>
-                    <span class="status-text server-summary-name">${server.name}</span>
-                    <span class="status-text" id="${server.id}-summary-text">Connexion...</span>
+                <div class="api-status" id="${server.id}-api-status" aria-live="polite">
+                        <div class="status-indicator" id="${server.id}-status-indicator"></div>
+                        <span class="status-text" aria-hidden="true">${server.name}</span>
+                        <span class="status-text" id="${server.id}-status-text">Connexion...</span>
                 </div>
             </a>
         `;
@@ -317,23 +341,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // CPU
         const cpuCfg = createChartConfig(cpuColor);
-        cpuCfg.data.datasets[0].backgroundColor = createGradient(cpuCanvas.getContext('2d'), cpuColor);
+        cpuCfg.data.datasets[0].backgroundColor = (ctx) => {
+            const { chart } = ctx;
+            const area = chart.chartArea;
+            if (!area) return makeAlpha(cpuColor, 0.25);
+            return createBiaxialFillPattern(chart, area, cpuColor, { topAlpha: 0.25, fadeRatio: 0.4 });
+        };
         state.charts.cpu = new Chart(cpuCanvas, cpuCfg);
 
         // RAM
         const ramCfg = createChartConfig(ramColor);
-        ramCfg.data.datasets[0].backgroundColor = createGradient(ramCanvas.getContext('2d'), ramColor);
+        ramCfg.data.datasets[0].backgroundColor = (ctx) => {
+            const { chart } = ctx;
+            const area = chart.chartArea;
+            if (!area) return makeAlpha(ramColor, 0.25);
+            return createBiaxialFillPattern(chart, area, ramColor, { topAlpha: 0.25, fadeRatio: 0.4 });
+        };
         state.charts.ram = new Chart(ramCanvas, ramCfg);
 
         // Network
         const netCfg = createChartConfig(downloadColor);
         netCfg.data.datasets[0].label = 'Download';
-        netCfg.data.datasets[0].backgroundColor = createGradient(netCanvas.getContext('2d'), downloadColor);
+        netCfg.data.datasets[0].backgroundColor = (ctx) => {
+            const { chart } = ctx;
+            const area = chart.chartArea;
+            if (!area) return makeAlpha(downloadColor, 0.25);
+            return createBiaxialFillPattern(chart, area, downloadColor, { topAlpha: 0.25, fadeRatio: 0.4 });
+        };
         netCfg.data.datasets.push({
             ...netCfg.data.datasets[0],
             label: 'Upload',
             borderColor: uploadColor,
-            backgroundColor: createGradient(netCanvas.getContext('2d'), uploadColor),
+            backgroundColor: (ctx) => {
+                const { chart } = ctx;
+                const area = chart.chartArea;
+                if (!area) return makeAlpha(uploadColor, 0.25);
+                return createBiaxialFillPattern(chart, area, uploadColor, { topAlpha: 0.25, fadeRatio: 0.4 });
+            },
             pointBackgroundColor: uploadColor
         });
         netCfg.options.scales.y.max = undefined;
@@ -365,15 +409,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const apiStatus        = document.getElementById(`${server.id}-api-status`);
         const summaryIndicator = document.getElementById(`${server.id}-summary-indicator`);
         const summaryText      = document.getElementById(`${server.id}-summary-text`);
+        const section          = document.getElementById(`${server.id}-section`);
+
+        // mapping couleur pour variable CSS
+        const varMap = {
+            connected: '#00ff88',
+            error: '#ff4444',
+            connecting: '#ffd866'
+        };
 
         const apply = (ind, txt) => {
             if (!ind || !txt) return;
             ind.className = 'status-indicator';
             txt.className = 'status-text';
-            if (status !== 'connecting') {
-                ind.classList.add(status);
-                txt.classList.add(status);
-            }
+            ind.classList.add(status);
+            txt.classList.add(status);
             txt.textContent = message;
         };
 
@@ -383,16 +433,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Appliquer l'état au conteneur API (effet glass + gradient)
         if (apiStatus) {
             apiStatus.className = 'api-status';
-            if (status !== 'connecting') {
-                apiStatus.classList.add(status);
-            }
+            apiStatus.classList.add(status);
+            const cssColor = varMap[status];
+            if (cssColor) apiStatus.style.setProperty('--server-status-color', cssColor);
         }
 
         // Ajouter l'état sur la puce résumé (api-status sous le titre)
         const summaryChip = document.getElementById(`${server.id}-status-summary`);
         if (summaryChip) {
             summaryChip.classList.remove('connected', 'error', 'connecting');
-            if (status !== 'connecting') summaryChip.classList.add(status);
+            summaryChip.classList.add(status);
+        }
+
+        // Appliquer la classe d'état au conteneur du serveur pour piloter les couleurs CSS
+        if (section) {
+            section.classList.remove('connected', 'error', 'connecting');
+            section.classList.add(status);
+            // Définir la variable CSS pour fallback si besoin
+            const cssColor = varMap[status];
+            if (cssColor) section.style.setProperty('--server-status-color', cssColor);
         }
     }
 
@@ -485,15 +544,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function showErrorState(server) {
-        const storageList = document.getElementById(`${server.id}-storage-list`);
-        if (storageList) {
-            storageList.innerHTML = `
-                <div class="error-state">
-                    <div class="error-icon">⚠️</div>
-                    <div>Impossible de récupérer les données</div>
-                    <button class="retry-button" onclick="retryConnection('${server.id}')">Réessayer</button>
-                </div>`;
+        // Activer overlay sur la grille
+        const overlay = document.getElementById(`${server.id}-grid-overlay`);
+        if (overlay) {
+            overlay.classList.add('show');
+            overlay.setAttribute('aria-hidden', 'false');
         }
+        // Ne pas vider la liste de disques; on garde le dernier rendu
     }
 
     // Retry manuel accessible globalement
@@ -508,9 +565,22 @@ document.addEventListener('DOMContentLoaded', () => {
         updateStats(server);
     };
 
+    // Délégation pour le bouton retry dans l'overlay
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.retry-button[data-server-id]');
+        if (!btn) return;
+        const serverId = btn.getAttribute('data-server-id');
+        const overlay = document.getElementById(`${serverId}-grid-overlay`);
+        if (overlay) {
+            overlay.classList.remove('show');
+            overlay.setAttribute('aria-hidden', 'true');
+        }
+        window.retryConnection(serverId);
+    });
+
     function createDiskEntryHTML(disk) {
         if (disk.error) {
-            console.warn(`Disk error for ${disk.name}: ${disk.error}`);
+            // Ne pas injecter de message d'erreur dans les disques pour conserver la mise en page
             return '';
         }
         return `
