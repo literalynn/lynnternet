@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#000000">
+    <title>Lynn's Cloud</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="nav-placeholder"></div>
+
+        <header>
+            <h1>Lynn's Cloud</h1>
+            <div id="servers-status-summary" class="servers-status-summary"></div>
+        </header>
+
+        <main>
+            <!-- Les sections de chaque serveur seront injectées dynamiquement par multiServer.js -->
+            <div id="servers-container"></div>
+        </main>
+
+        <div id="footer-placeholder"></div>
+    </div>
+    
+    <script src="main.js" defer></script>
+    <!-- Remplacé script.js par multiServer.js pour supporter plusieurs serveurs -->
+    <script src="multiServer.js"></script>
+    <noscript>
+        <div style="max-width: 800px; margin: 2rem auto; padding: 1rem 1.25rem; border-radius: 12px; background: #1a1a1a; color: #fff; text-align: center;">
+            JavaScript est requis pour afficher les statistiques en direct.
+        </div>
+    </noscript>
+</body>
+</html>
