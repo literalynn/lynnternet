@@ -6,147 +6,149 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="dark">
     <meta name="theme-color" content="#000000">
-    <title>Lynnternet - Panels</title>
+    <title>Lynnternet - Applications</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div id="nav-placeholder"></div>
+    <div id="nav-placeholder"></div>
+    <div class="wrapper">
+        <div class="container">
+            <header class="top-header">
+                <h1>Panels</h1>
+            </header>
+            <main>
+                <div class="container">
+                    <section class="service-category media">
+                        <h2>Applications</h2>
+                            <div class="button-grid media-grid">
+                                <a href="https://plex.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Plex (serveur ltn1)">
+                                    <h3>
+                                        <span class="card-icon">✦</span>
+                                        Plex
+                                        <span class="server-status-card" data-server-id="ltn1">
+                                            <div class="status-indicator"></div>
+                                            <p>ltn1</p>
+                                            <div class="status-tooltip"></div>
+                                        </span>
+                                    </h3>
+                                    <p>Votre bibliothèque média centralisée.</p>
+                                </a>
+                                <a href="https://overseerr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Overseerr (serveur ltn1)">
+                                    <h3>
+                                        <span class="card-icon">✦</span>
+                                        Overseerr
+                                        <span class="server-status-card" data-server-id="ltn1">
+                                            <div class="status-indicator"></div>
+                                            <p>ltn1</p>
+                                            <div class="status-tooltip"></div>
+                                        </span>
+                                    </h3>
+                                    <p>Gestion des demandes de contenu.</p>
+                                </a>
+                                <a href="https://pterodactyl.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Pterodactyl (serveur ltn2)">
+                                    <h3>
+                                        <span class="card-icon">✦</span>
+                                        Pterodactyl
+                                        <span class="server-status-card" data-server-id="ltn2">
+                                            <div class="status-indicator"></div>
+                                            <p>ltn2</p>
+                                            <div class="status-tooltip"></div>
+                                        </span>
+                                    </h3>
+                                    <p>Panneau de contrôle pour serveurs de jeu.</p>
+                                </a>
+                            </div>
+                    </section>
 
-        <header>
-            <h1>Applications</h1>
-            <p class="subtitle">Accès rapide aux panels lynnternet</p>
-        </header>
-
-        <main>
-            <section class="service-category media">
-                <h2>Applications</h2>
-                <div class="button-grid media-grid">
-                    <a href="https://plex.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Plex (serveur ltn1)">
-                        <h3>
-                            <span class="card-icon">✦</span>
-                            Plex
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Votre bibliothèque média centralisée.</p>
-                    </a>
-                    <a href="https://overseerr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Overseerr (serveur ltn1)">
-                        <h3>
-                            <span class="card-icon">✦</span>
-                            Overseerr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Gestion des demandes de contenu.</p>
-                    </a>
-                    <a href="https://pterodactyl.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Pterodactyl (serveur ltn2)">
-                        <h3>
-                            <span class="card-icon">✦</span>
-                            Pterodactyl
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn2</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Panneau de contrôle pour serveurs de jeu.</p>
-                    </a>
+                    <section class="service-category admin">
+                        <h2>Panels Admin</h2>
+                        <div class="button-grid admin-grid">
+                            <a href="https://qbit.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir qBittorrent (serveur ltn1)">
+                                <h3>qBittorrent
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Client BitTorrent.</p>
+                            </a>
+                            <a href="https://radarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Radarr (serveur ltn1)">
+                                <h3>Radarr
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Gestion de films.</p>
+                            </a>
+                            <a href="https://sonarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Sonarr (serveur ltn1)">
+                                <h3>Sonarr
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Gestion de séries.</p>
+                            </a>
+                            <a href="https://bazarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Bazarr (serveur ltn1)">
+                                <h3>Bazarr
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Gestion des sous-titres.</p>
+                            </a>
+                            <a href="https://prowlarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Prowlarr (serveur ltn1)">
+                                <h3>Prowlarr
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Gestion des indexers.</p>
+                            </a>
+                            <a href="https://huntarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Huntarr (serveur ltn1)">
+                                <h3>Huntarr
+                                    <span class="server-status-card" data-server-id="ltn1">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn1</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Automatisation de Radarr/Sonarr.</p>
+                            </a>
+                            <a href="http://45.155.54.165:81/" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir le manager Nginx VPS (serveur ltn0)">
+                                <h3>Nginx VPS
+                                    <span class="server-status-card" data-server-id="ltn0">
+                                        <div class="status-indicator"></div>
+                                        <p>ltn0</p>
+                                        <div class="status-tooltip"></div>
+                                    </span>
+                                </h3>
+                                <p>Manageur des proxies VPS.</p>
+                            </a>
+                        </div>
+                    </section>
                 </div>
-            </section>
-
-            <section class="service-category admin">
-                <h2>Panels Admin</h2>
-                <div class="button-grid admin-grid">
-                    <a href="https://qbit.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir qBittorrent (serveur ltn1)">
-                        <h3>qBittorrent
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Client BitTorrent.</p>
-                    </a>
-                    <a href="https://radarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Radarr (serveur ltn1)">
-                        <h3>Radarr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Gestion de films.</p>
-                    </a>
-                    <a href="https://sonarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Sonarr (serveur ltn1)">
-                        <h3>Sonarr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Gestion de séries.</p>
-                    </a>
-                    <a href="https://bazarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Bazarr (serveur ltn1)">
-                        <h3>Bazarr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Gestion des sous-titres.</p>
-                    </a>
-                    <a href="https://prowlarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Prowlarr (serveur ltn1)">
-                        <h3>Prowlarr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Gestion des indexers.</p>
-                    </a>
-                    <a href="https://huntarr.lynnternet.cloud" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir Huntarr (serveur ltn1)">
-                        <h3>Huntarr
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn1</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Automatisation de Radarr/Sonarr.</p>
-                    </a>
-                    <a href="http://45.155.54.165:81/" target="_blank" rel="noopener noreferrer" class="service-button" aria-label="Ouvrir le manager Nginx VPS (serveur ltn3)">
-                        <h3>Nginx VPS
-                            <span class="server-status-card">
-                                <div class="status-indicator"></div> 
-                                <p>ltn3</p>
-                                <div class="status-tooltip"></div>
-                            </span>
-                        </h3>
-                        <p>Manageur des proxies VPS.</p>
-                    </a>
-                </div>
-            </section>
-        </main>
-
-        <div id="footer-placeholder"></div>
+            </main>
+        </div>
+        <div class="container">
+            <div id="footer-placeholder"></div>
+        </div>
     </div>
-
-    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js" defer></script>
+    <script src="multiServer.js"></script>
     <noscript>
         <div style="max-width: 800px; margin: 2rem auto; padding: 1rem 1.25rem; border-radius: 12px; background: #1a1a1a; color: #fff; text-align: center;">
             JavaScript est requis pour afficher la navigation et le pied de page.
@@ -154,3 +156,4 @@
     </noscript>
 </body>
 </html>
+<!-- by Lynn with <3 cloud.lynn.paris -->

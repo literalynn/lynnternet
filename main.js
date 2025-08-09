@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 1) Charger nav/footer
     Promise.all([
-        fetch('nav.html').then(r => r.ok ? r.text() : Promise.reject('nav')), 
+        fetch('nav.html').then(r => r.ok ? r.text() : Promise.reject('nav')),
         fetch('footer.html').then(r => r.ok ? r.text() : Promise.reject('footer'))
     ]).then(([navHTML, footerHTML]) => {
         const navPh = document.getElementById('nav-placeholder');
@@ -14,8 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
         console.warn('Chargement partiel:', err);
         const navPh = document.getElementById('nav-placeholder');
         const footPh = document.getElementById('footer-placeholder');
-        if (navPh) navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
-        if (footPh) footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
+        if (navPh) {
+            navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
+        }
+        if (footPh) {
+            footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
+        }
     });
 
     // 2) Activer/indiquer la page active
@@ -44,7 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Focus visible sur éléments cliquables si Tab
         let userUsedKeyboard = false;
         window.addEventListener('keydown', (e) => {
-            if (e.key === 'Tab') userUsedKeyboard = true;
+            if (e.key === 'Tab') {
+                userUsedKeyboard = true;
+            }
         });
         document.addEventListener('focusin', (e) => {
             if (!userUsedKeyboard) return;
@@ -55,7 +61,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         document.addEventListener('focusout', (e) => {
             const el = e.target;
-            if (el && el.classList) el.classList.remove('focus-visible');
+            if (el && el.classList) {
+                el.classList.remove('focus-visible');
+            }
         });
     }
 });
+// by Lynn with <3 cloud.lynn.paris
