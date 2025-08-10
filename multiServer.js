@@ -1,5 +1,3 @@
-// multiServer.js – dashboard + panels
-
 document.addEventListener('DOMContentLoaded', () => {
     // ------------------------------
     // 1) Config
