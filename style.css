@@ -120,7 +120,7 @@ footer {
 .top-header {
     text-align: center;
     position: relative;
-    margin-block: 5rem;
+    margin: 7.5rem 0 2.5rem 0;
     display: flex;
     flex-direction: column;
     align-items: center;
