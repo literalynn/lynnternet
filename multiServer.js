@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // ------------------------------
-  // 1) Config
-  // ------------------------------
+  // ==============================
+  // Config
+  // ==============================
   const SERVERS = [
     { id: 'ltn1', name: 'ltn1', api: 'https://ltn1.lynnternet.cloud/api/stats', description: 'Plex media server', services: 'plex' },
     { id: 'ltn2', name: 'ltn2', api: 'https://ltn2.lynnternet.cloud/api/stats', description: 'Game servers', services: 'game' },
@@ -15,12 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const RETRY_DELAY = 5000;
   const MAX_RETRIES = 3;
 
-  // ------------------------------
-  // 2) Helpers + plugins Chart.js
-  // ------------------------------
-  function makeAlpha(color, alpha) {
-    return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
-  }
+  // ==============================
+  // Helpers / Chart.js plugins
+  // ==============================
+  const makeAlpha = (color, a) => color.replace('rgb', 'rgba').replace(')', `, ${a})`);
+  const sanitizeId = s => String(s).trim().replace(/[^\w-]+/g, '-');
 
   function createBiaxialFillPattern(chart, area, color, options = {}) {
     const topAlpha = options.topAlpha ?? 0.25;
@@ -67,8 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     afterDatasetDraw(chart) { chart.ctx.restore(); }
   };
-  Chart.register(glowLinePlugin);
-
   const fadeLeftPlugin = {
     id: 'fadeLeft',
     beforeDatasetsDraw(chart, args, pluginOptions) {
@@ -87,7 +84,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
   };
-  Chart.register(fadeLeftPlugin);
+  if (window.Chart) {
+    Chart.register(glowLinePlugin);
+    Chart.register(fadeLeftPlugin);
+  }
 
   function createChartConfig(mainColor) {
     return {
@@ -127,9 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // ------------------------------
-  // 3) Conditional DOM generation
-  // ------------------------------
+  // ==============================
+  // Conditional DOM generation
+  // ==============================
   const serversContainer = document.getElementById('servers-container');
   const statusSummaryContainer = document.getElementById('servers-status-summary');
   const isDashboard = !!serversContainer;
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function serverSectionHTML(s) {
     return `
-      <section class="server-section" id="${s.id}-section">
+      <section class="server-section" id="${s.id}-section" data-server-id="${s.id}">
         <header class="server-header">
           <h2 class="server-title">${s.name}</h2>
           <p class="server-subtitle">${s.description}</p>
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <div class="stat-card">
             <div class="card-title"><h3>Stockage</h3><span id="${s.id}-storage-total-text" class="card-value-text"></span></div>
-            <div id="${s.id}-storage-list" class="storage-list-container">
+            <div id="${s.id}-storage-list" class="storage-list-container" data-server-id="${s.id}">
               <div class="loading-state" id="${s.id}-loading-disks">
                 <div class="loading-spinner"></div><span>Chargement des disques...</span>
               </div>
@@ -210,9 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </a>`;
   }
 
-  // ------------------------------
-  // 4) Dashboard: states + charts
-  // ------------------------------
+  // ==============================
+  // Dashboard state + charts
+  // ==============================
   const states = {};
   if (isDashboard) {
     SERVERS.forEach(s => {
@@ -254,6 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initCharts(s) {
+    if (!window.Chart) return;
     const st = states[s.id];
     const cpuColor = 'rgb(255, 0, 166)';
     const ramColor = 'rgb(200, 55, 255)';
@@ -323,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     netCfg.options.plugins.tooltip.displayColors = true;
     st.charts.net = new Chart(netCanvas, netCfg);
 
-    // Pre-fill chart with saved history if available
+    // Seed from history
     if (st.cpuHistory.length) {
       patchChart(st.charts.cpu, [st.cpuHistory]);
       patchChart(st.charts.ram, [st.ramHistory]);
@@ -339,6 +340,9 @@ document.addEventListener('DOMContentLoaded', () => {
     chart.update('none');
   }
 
+  // ==============================
+  // API status + fetch utils
+  // ==============================
   function updateAPIStatus(s, status, message) {
     const ind = document.getElementById(`${s.id}-status-indicator`);
     const txt = document.getElementById(`${s.id}-status-text`);
@@ -382,16 +386,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const { timeout = 10000 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
-    return fetch(resource, { ...options, signal: controller.signal })
-      .finally(() => clearTimeout(id));
+    return fetch(resource, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
   }
 
+  // ==============================
+  // Stats polling + rendering
+  // ==============================
   async function updateStats(s) {
     const st = states[s.id];
     try {
-      if (!st.isConnected && st.retryCount === 0) {
-        updateAPIStatus(s, 'connecting', 'Connexion…');
-      }
+      if (!st.isConnected && st.retryCount === 0) updateAPIStatus(s, 'connecting', 'Connexion…');
       const res = await fetchWithTimeout(s.api, { method: 'GET', timeout: 10000 });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const stats = await res.json();
@@ -421,30 +425,55 @@ document.addEventListener('DOMContentLoaded', () => {
       if (storageText) storageText.textContent = `${stats.storage_total_used} To`;
 
       if (loading) loading.style.display = 'none';
-      if (storageList) {
-        if (!st.disksInitialized || stats.disks.length !== Object.keys(st.diskElements ?? {}).length) {
-          storageList.innerHTML = stats.disks.map(diskEntryHTML).join('');
+
+      // --- Storage (namespaced per-server + scoped queries, no full-node replace)
+      if (storageList && Array.isArray(stats.disks)) {
+        const currentKeys = Object.keys(st.diskElements || {});
+        const needRebuild = !st.disksInitialized || stats.disks.filter(d => !d.error).length !== currentKeys.length;
+
+        if (needRebuild) {
+          storageList.innerHTML = stats.disks
+            .filter(d => !d.error)
+            .map(d => diskEntryHTML(d, s.id))
+            .join('');
+
           st.diskElements = {};
           for (const d of stats.disks) {
             if (d.error) continue;
-            const id = `disk-${d.name.replace(/\s+/g, '-')}`;
-            const root = document.getElementById(id);
+            const sid = `${s.id}-disk-${sanitizeId(d.name)}`;
+            const root = storageList.querySelector(`#${sid}`); // SCOPED to this server
             if (!root) continue;
             st.diskElements[d.name] = {
-              value: root.querySelector('.disk-value'),
-              bar: root.querySelector('.progress-bar'),
-              glow: root.querySelector('.progress-bar-shadow')
+              root,
+              used:  root.querySelector('.disk-value .used'),
+              total: root.querySelector('.disk-value .total'),
+              bar:   root.querySelector('.progress-bar'),
+              glow:  root.querySelector('.progress-bar-shadow'),
+              lastPercent: undefined,
+              lastUsed:    undefined,
+              lastTotal:   undefined
             };
           }
           st.disksInitialized = true;
-        } else {
-          for (const d of stats.disks) {
-            if (d.error) continue;
-            const el = st.diskElements[d.name];
-            if (!el) continue;
-            el.value.textContent = `${d.used_tb} / ${d.total_tb} To`;
-            el.bar.style.width = `${d.percent}%`;
-            el.glow.style.width = `${d.percent}%`;
+        }
+
+        for (const d of stats.disks) {
+          if (d.error) continue;
+          const el = st.diskElements[d.name];
+          if (!el) continue;
+          const pctStr = `${d.percent}%`;
+          if (el.lastPercent !== pctStr) {
+            el.bar.style.width = pctStr;
+            el.glow.style.width = pctStr;
+            el.lastPercent = pctStr;
+          }
+          if (el.lastUsed !== d.used_tb) {
+            el.used.textContent = d.used_tb;
+            el.lastUsed = d.used_tb;
+          }
+          if (el.lastTotal !== d.total_tb) {
+            el.total.textContent = d.total_tb;
+            el.lastTotal = d.total_tb;
           }
         }
       }
@@ -477,6 +506,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // ==============================
+  // UI actions
+  // ==============================
   window.retryConnection = function(serverId) {
     const s = SERVERS.find(x => x.id === serverId);
     if (!s || !states[s.id]) return;
@@ -507,13 +539,19 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.click();
   }, { passive: false });
 
-  function diskEntryHTML(d) {
+  // ==============================
+  // Disk row template
+  // ==============================
+  function diskEntryHTML(d, serverId) {
     if (d.error) return '';
+    const safe = sanitizeId(d.name);
     return `
-      <div class="disk-entry" id="disk-${d.name.replace(/\s+/g, '-')}">
+      <div class="disk-entry" id="${serverId}-disk-${safe}">
         <div class="disk-info-header">
           <span class="disk-name">${d.name}</span>
-          <span class="disk-value">${d.used_tb}<span style="color: var(--c-accent-primary);"> / </span>${d.total_tb} To</span>
+          <span class="disk-value">
+            <span class="used">${d.used_tb}</span><span class="sep" style="color: var(--c-accent-primary);"> / </span><span class="total">${d.total_tb}</span> <span class="unit">To</span>
+          </span>
         </div>
         <div class="progress-bar-container">
           <div class="progress-bar" style="width: ${d.percent}%;"></div>
@@ -522,9 +560,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>`;
   }
 
-  // ------------------------------
-  // 5) 3D spotlight effect
-  // ------------------------------
+  // ==============================
+  // 3D spotlight effect
+  // ==============================
   setupSpotlightCards();
   function setupSpotlightCards() {
     const cards = document.querySelectorAll('.stat-card:not(.loading-tile), .service-button');
@@ -552,9 +590,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ------------------------------
-  // 6) Panels: server status cards
-  // ------------------------------
+  // ==============================
+  // Panels (status badges on other pages)
+  // ==============================
   if (!isDashboard && panelStatusCards && panelStatusCards.length) {
     const byId = Object.fromEntries(SERVERS.map(s => [s.id, s]));
     const map = new Map();
@@ -575,14 +613,14 @@ document.addEventListener('DOMContentLoaded', () => {
       cards.forEach(({ card, indicator, tooltip }) => setPanelCardStatus(card, indicator, tooltip, 'connecting', 'Connexion…'));
 
       if (!s || !s.api) {
-        cards.forEach(({ card, indicator, tooltip }) => 
+        cards.forEach(({ card, indicator, tooltip }) =>
           setPanelCardStatus(card, indicator, tooltip, 'error', 'Hors ligne'));
         return;
       }
       const ping = () => pingServer(s.api)
-        .then(() => cards.forEach(({ card, indicator, tooltip }) => 
+        .then(() => cards.forEach(({ card, indicator, tooltip }) =>
           setPanelCardStatus(card, indicator, tooltip, 'connected', 'Connecté')))
-        .catch(() => cards.forEach(({ card, indicator, tooltip }) => 
+        .catch(() => cards.forEach(({ card, indicator, tooltip }) =>
           setPanelCardStatus(card, indicator, tooltip, 'error', 'Hors ligne')));
       ping();
       setInterval(ping, PING_PANELS_MS);
