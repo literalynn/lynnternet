@@ -96,7 +96,7 @@ main { flex-grow: 1; width: 100%; }
 footer {
     margin-top: var(--space-6);
     padding-block: 5rem;
-    font-size: 1rem;
+    font-size: clamp(0.8rem, 2vw, 1rem);
     width: 100%;
     line-height: 1;
     display: flex;
@@ -110,14 +110,15 @@ footer {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 3rem;
+    gap: clamp(1.5rem, 2.5vw, 3rem);
+    row-gap: 3.5rem;
     flex-wrap: wrap;
     color: var(--c-text-primary);
     width: 100%;
 }
 .footer-content svg {
     stroke: var(--c-accent-secondary);
-    height: 2rem;
+    height: clamp(1rem, 2vw, 2rem);
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
@@ -136,13 +137,14 @@ footer {
     justify-content: center;
     gap: 1rem;
 }
-.footer-social svg {
-    width: auto;
+.footer-social svg { 
+    display: block;
+    width: 1.5rem;
     height: 1.5rem;
     transition: all var(--transition-speed) var(--transition-ease);
     fill: color-mix(in srgb, var(--c-text-secondary) 50%, transparent);
 }
-.footer-social svg:hover {
+.footer-social .icon:hover svg {
     fill: var(--c-accent-secondary);
     filter: drop-shadow(0 0 1rem #f89fcd80);
 }
@@ -156,19 +158,22 @@ footer {
     justify-content: center;
     gap: 0.5rem;
 }
-.footer-location svg {
-    fill: var(--c-accent-secondary);
-    overflow: visible;
-    width: 1rem;
-    height: 1.5rem;
+.footer-location-icon {
+    height: 1px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.signature {
+.footer-location svg {
+    fill: var(--c-accent-secondary);
+    overflow: visible;
+    height: 1rem;
     display: absolute;
+    align-items: center;
+    justify-content: center;
+}
+.signature {
     height: 2rem;
-    width: 20%;
 }
 .signature svg { 
     height: 4rem; 
@@ -182,6 +187,7 @@ footer {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    text-align: center;
     gap: 0.5rem;
     color: var(--c-text-secondary);
 }
@@ -193,7 +199,6 @@ footer {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
-
 /* ==========================================================================  
    4. TYPO  
    ========================================================================== */
@@ -591,6 +596,22 @@ a:focus-visible,
 @media (min-width: 1200px) {
     .status-grid { grid-template-columns: repeat(4, 1fr); }
     .media-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* Simple breakpoint pour le footer: déplace la signature en dessous et masque le 2ème séparateur */
+@media (max-width: 1000px) {
+    .footer-content .signature {
+        flex-basis: 100%;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.5rem;
+    }
+    /* Masque le 2ème svg séparateur (la courbe) dans le footer */
+    .footer-content > svg:nth-of-type(2) {
+        display: none;
+    }
 }
 
 /* ==========================================================================  
