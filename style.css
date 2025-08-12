@@ -1,8 +1,4 @@
-/* ==========================================================================  
-   1. FOUNDATION & DESIGN TOKENS  
-   ========================================================================== */
-
-   :root {
+:root {
     --c-bg: #000000;
     --c-surface: rgba(12, 12, 12, 0.5);
     --c-border: rgba(255, 255, 255, 0.1);
@@ -26,10 +22,6 @@
     --space-5: 1.5rem;
     --space-6: 2rem;
 }
-
-/* ==========================================================================  
-   2. RESET & GLOBAL BACKDROP (Aurora)  
-   ========================================================================== */
 
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
@@ -69,10 +61,6 @@ body::after {
     0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 0.2; }
     100% { transform: translate(-30%, -70%) rotate(-180deg); opacity: 0.4; }
 }
-
-/* ==========================================================================  
-   3. STRUCTURE  
-   ========================================================================== */
 
 .wrapper {
     padding: 5rem 2rem;
@@ -119,6 +107,7 @@ footer {
 .footer-content svg {
     stroke: var(--c-accent-secondary);
     height: clamp(1rem, 2vw, 2rem);
+    width: auto;
     stroke-linecap: round;
     stroke-linejoin: round;
     fill: none;
@@ -199,10 +188,6 @@ footer {
     stroke-linecap: round;
     stroke-linejoin: round;
 }
-/* ==========================================================================  
-   4. TYPO  
-   ========================================================================== */
-
 .top-header {
     text-align: center;
     position: relative;
@@ -270,10 +255,6 @@ a:focus-visible,
     border-radius: 12px;
 }
 
-/* ==========================================================================  
-   5. STATUS CHIP (api-status)  
-   ========================================================================== */
-
 .api-status {
     display: flex;
     align-items: center;
@@ -337,10 +318,6 @@ a:focus-visible,
     0%,100% { opacity: 0.6; }
     50% { opacity: 1; }
 }
-
-/* ==========================================================================  
-   6. CARDS & BUTTONS  
-   ========================================================================== */
 
 .stat-card, .service-button {
     background: var(--c-surface);
@@ -488,10 +465,6 @@ a:focus-visible,
 }
 .retry-button:hover { background: #ff4444; color: #fff; transform: translateY(-1px); }
 
-/* ==========================================================================  
-   7. SERVER LAYOUT  
-   ========================================================================== */
-
 .servers-status-summary { display: flex; flex-direction: row; gap: 1rem; width: 100%; justify-content: center; }
 #servers-container { display: flex; flex-direction: column; gap: 5rem; }
 
@@ -530,10 +503,6 @@ a:focus-visible,
 }
 .progress-bar-shadow { filter: blur(12px); }
 
-/* ==========================================================================  
-   8. GRIDS  
-   ========================================================================== */
-
 .status-grid, .button-grid { display: grid; gap: 0.5rem; position: relative; }
 .status-grid, .admin-grid, .media-grid { grid-template-columns: 1fr; }
 .admin-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
@@ -560,7 +529,6 @@ a:focus-visible,
 .grid-overlay .error-icon { font-size: 2rem; opacity: 0.85; }
 .grid-overlay .overlay-text { color: #ff4444; }
 
-/* Offline (API error) */
 .server-section.error .stat-card {
     position: relative;
     background-image: linear-gradient(100deg, transparent 20%, var(--c-surface) 30%, transparent 40%);
@@ -585,10 +553,6 @@ a:focus-visible,
     .server-section.error .status-grid { min-height: 160px; }
 }
 
-/* ==========================================================================  
-   9. RESPONSIVE  
-   ========================================================================== */
-
 @media (min-width: 768px) {
     .status-grid { grid-template-columns: repeat(2, 1fr); }
     .navbar-nav { padding: 0 0.5rem; gap: 1rem; }
@@ -598,7 +562,6 @@ a:focus-visible,
     .media-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* Simple breakpoint pour le footer: déplace la signature en dessous et masque le 2ème séparateur */
 @media (max-width: 1000px) {
     .footer-content .signature {
         flex-basis: 100%;
@@ -608,15 +571,10 @@ a:focus-visible,
         justify-content: center;
         margin-top: 0.5rem;
     }
-    /* Masque le 2ème svg séparateur (la courbe) dans le footer */
     .footer-content > svg:nth-of-type(2) {
         display: none;
     }
 }
-
-/* ==========================================================================  
-   10. MOBILE OFFLINE LOADING TILE OVERRIDES  
-   ========================================================================== */
 
 .loading-tile { display: none; align-items: center; justify-content: center; gap: 0.75rem; text-align: center; }
 .loading-tile .tile-text { color: var(--c-text-secondary); font-weight: 600; }
@@ -674,4 +632,15 @@ a:focus-visible,
     .server-section.connecting .status-grid { min-height: 140px; }
     .api-status .status-text + .status-text { display: none; }
 }
+
+.stat-card, .service-button { contain: content; }
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar, .progress-bar-shadow, .stat-card, .service-button {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+.stat-card:hover, .service-button:hover { will-change: transform; }
 /* by Lynn with <3 cloud.lynn.paris */
