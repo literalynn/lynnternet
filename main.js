@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setActiveNavLink();
       enhanceAccessibility();
     }).catch(err => {
-      console.warn('Chargement partiel:', err);
       const navPh = document.getElementById('nav-placeholder');
       const footPh = document.getElementById('footer-placeholder');
       if (navPh) navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
@@ -43,38 +42,38 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       document.addEventListener('focusout', e => { const el = e.target; if (el && el.classList) el.classList.remove('focus-visible'); });
     }
-  
-    setupSpotlightCards();
-    function setupSpotlightCards() {
-      const cards = document.querySelectorAll('.stat-card:not(.loading-tile), .service-button');
-      const scheduled = new WeakMap();
-      cards.forEach(card => {
-        if (card.hasAttribute('data-spotlight-bound')) return;
-        card.setAttribute('data-spotlight-bound', '');
-        const schedule = e => {
-          if (scheduled.get(card)) return;
-          scheduled.set(card, true);
-          requestAnimationFrame(() => {
-            scheduled.set(card, false);
-            const r = card.getBoundingClientRect();
-            const x = e.clientX - r.left, y = e.clientY - r.top;
-            const cx = x - r.width / 2, cy = y - r.height / 2;
-            const rotateX = (cy / r.height) * -5, rotateY = (cx / r.width) * 5;
-            const angle = (Math.atan2(cy, cx) * 180 / Math.PI + 450) % 360;
-            card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            card.style.setProperty('--spotlight-x', `${x}px`);
-            card.style.setProperty('--spotlight-y', `${y}px`);
-            card.style.setProperty('--grad-angle', `${angle}deg`);
-          });
-        };
-        card.addEventListener('pointermove', schedule, { passive: true });
-        card.addEventListener('pointerleave', () => {
-          card.style.transform = '';
-          card.style.setProperty('--spotlight-x', '-999px');
-          card.style.setProperty('--spotlight-y', '-999px');
-          card.style.setProperty('--grad-angle', '200deg');
-        }, { passive: true });
-      });
-    }
   });
+  
+  (function () {
+    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SEL = '.stat-card:not(.loading-tile), .service-button';
+    const scheduled = new WeakMap();
+    function paint(card, e) {
+      if (prefersReduced) return;
+      const r = card.getBoundingClientRect();
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      const cx = x - r.width / 2, cy = y - r.height / 2;
+      const rx = (cy / r.height) * -5, ry = (cx / r.width) * 5;
+      const ang = (Math.atan2(cy, cx) * 180 / Math.PI + 450) % 360;
+      card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+      card.style.setProperty('--spotlight-x', `${x}px`);
+      card.style.setProperty('--spotlight-y', `${y}px`);
+      card.style.setProperty('--grad-angle', `${ang}deg`);
+    }
+    document.addEventListener('pointermove', (e) => {
+      const card = e.target.closest(SEL);
+      if (!card) return;
+      if (scheduled.get(card)) return;
+      scheduled.set(card, true);
+      requestAnimationFrame(() => { scheduled.set(card, false); paint(card, e); });
+    }, { passive: true });
+    document.addEventListener('pointerleave', (e) => {
+      const card = e.target.closest(SEL);
+      if (!card) return;
+      card.style.transform = '';
+      card.style.setProperty('--spotlight-x', '-999px');
+      card.style.setProperty('--spotlight-y', '-999px');
+      card.style.setProperty('--grad-angle', '200deg');
+    }, true);
+  })();
   // by Lynn with <3 cloud.lynn.paris

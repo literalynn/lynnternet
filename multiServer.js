@@ -50,13 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
     off.width = Math.max(1, area.right - area.left);
     off.height = Math.max(1, area.bottom - area.top);
     const g = off.getContext('2d');
-
     const vGrad = g.createLinearGradient(0, 0, 0, off.height);
     vGrad.addColorStop(0, makeAlpha(color, topAlpha));
     vGrad.addColorStop(1, makeAlpha(color, 0));
     g.fillStyle = vGrad;
     g.fillRect(0, 0, off.width, off.height);
-
     g.globalCompositeOperation = 'destination-in';
     const fr = Math.min(Math.max(fadeRatio, 0), 1);
     const hMask = g.createLinearGradient(0, 0, off.width, 0);
@@ -65,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
     hMask.addColorStop(1, 'rgba(0,0,0,1)');
     g.fillStyle = hMask;
     g.fillRect(0, 0, off.width, off.height);
-
     return chart.ctx.createPattern(off, 'no-repeat');
   }
 
@@ -268,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const aw = Math.max(1, a.right - a.left);
       const ah = Math.max(1, a.bottom - a.top);
       if (!p || w !== aw || h !== ah) { w = aw; h = ah; p = createBiaxialFillPattern(chart, a, mainColor, opts); }
+      if (p && p.setTransform) p.setTransform(new DOMMatrix().translate(a.left, a.top));
       return p;
     };
   }
@@ -329,12 +327,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function fetchJSON(url, { timeout = CFG.FETCH_TIMEOUT_MS, signal } = {}) {
     const existing = inflightByUrl.get(url);
     if (existing) return existing;
-
     const ctrl = new AbortController();
     const outerSignal = signal;
     const onAbort = () => ctrl.abort();
     if (outerSignal) outerSignal.addEventListener('abort', onAbort, { once: true });
-
     const timeoutId = setTimeout(() => ctrl.abort(), timeout);
     const p = fetch(url, { method: 'GET', signal: ctrl.signal })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -343,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inflightByUrl.delete(url);
         if (outerSignal) outerSignal.removeEventListener('abort', onAbort);
       });
-
     inflightByUrl.set(url, p);
     return p;
   }
@@ -358,23 +353,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const cssColor = STATUS_COLOR[status] || STATUS_COLOR.error;
 
     scheduleWrite(() => {
-      if (ind && txt) {
-        ind.className = 'status-indicator';
-        txt.className = 'status-text';
-        ind.classList.add(status);
-        txt.classList.add(status);
-        setText(txt, message);
-      }
-      if (chip) {
-        chip.className = 'api-status';
-        chip.classList.add(status);
-        chip.style.setProperty('--server-status-color', cssColor);
-      }
-      if (section) {
-        section.classList.remove('connected', 'error', 'connecting');
-        section.classList.add(status);
-        section.style.setProperty('--server-status-color', cssColor);
-      }
+      if (ind && txt) { ind.className = 'status-indicator'; txt.className = 'status-text'; ind.classList.add(status); txt.classList.add(status); setText(txt, message); }
+      if (chip) { chip.className = 'api-status'; chip.classList.add(status); chip.style.setProperty('--server-status-color', cssColor); }
+      if (section) { section.classList.remove('connected', 'error', 'connecting'); section.classList.add(status); section.style.setProperty('--server-status-color', cssColor); }
       if (mobileTile) {
         const icon = mobileTile.querySelector('.tile-icon');
         if (mobileTxt) setText(mobileTxt, status === 'error' ? 'Hors ligne' : status === 'connecting' ? 'Connexion…' : 'Connecté');
@@ -389,12 +370,9 @@ document.addEventListener('DOMContentLoaded', () => {
     SERVERS.forEach(s => {
       const st = stateFor(s);
       if (st.nextAllowedAt && now < st.nextAllowedAt) return;
-
       if (st.controller) { try { st.controller.abort(); } catch {} }
       st.controller = new AbortController();
-
       if (!st.isConnected && st.retryCount === 0) updateAPIStatus(s, 'connecting', 'Connexion…');
-
       fetchJSON(s.api, { timeout: CFG.FETCH_TIMEOUT_MS, signal: st.controller.signal })
         .then(stats => {
           st.retryCount = 0; st.isConnected = true; st.backoffMs = 0; st.nextAllowedAt = 0;
@@ -532,7 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
     map.forEach((cards, serverId) => {
       const s = byId[serverId];
       cards.forEach(({ card, indicator, tooltip }) => setPanelCardStatus(card, indicator, tooltip, 'connecting', 'Connexion…'));
-
       if (!s || !s.api) {
         cards.forEach(({ card, indicator, tooltip }) => setPanelCardStatus(card, indicator, tooltip, 'error', 'Hors ligne'));
         return;
