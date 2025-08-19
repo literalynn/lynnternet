@@ -35,6 +35,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function enhanceAccessibility() {
       let usedKeyboard = false;
       window.addEventListener('keydown', e => { if (e.key === 'Tab') usedKeyboard = true; });
+      window.addEventListener('pointerdown', () => {
+        usedKeyboard = false;
+        const active = document.activeElement;
+        if (active && active.classList) active.classList.remove('focus-visible');
+      });
       document.addEventListener('focusin', e => {
         if (!usedKeyboard) return;
         const el = e.target;
