@@ -1,19 +1,22 @@
 document.addEventListener('DOMContentLoaded', () => {
-    Promise.all([
+    Promise.allSettled([
       fetch('nav.html').then(r => r.ok ? r.text() : Promise.reject('nav')),
       fetch('footer.html').then(r => r.ok ? r.text() : Promise.reject('footer'))
-    ]).then(([navHTML, footerHTML]) => {
+    ]).then(([navRes, footerRes]) => {
       const navPh = document.getElementById('nav-placeholder');
       const footPh = document.getElementById('footer-placeholder');
-      if (navPh) navPh.innerHTML = navHTML;
-      if (footPh) footPh.innerHTML = footerHTML;
+      if (navRes.status === 'fulfilled') {
+        if (navPh) navPh.innerHTML = navRes.value;
+      } else if (navPh) {
+        navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
+      }
+      if (footerRes.status === 'fulfilled') {
+        if (footPh) footPh.innerHTML = footerRes.value;
+      } else if (footPh) {
+        footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
+      }
       setActiveNavLink();
       enhanceAccessibility();
-    }).catch(err => {
-      const navPh = document.getElementById('nav-placeholder');
-      const footPh = document.getElementById('footer-placeholder');
-      if (navPh) navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
-      if (footPh) footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
     });
   
     function setActiveNavLink() {
