@@ -75,6 +75,7 @@ body::after {
     flex-direction: column;
 }
 main { flex-grow: 1; width: 100%; }
+.text-center { text-align: center; }
 #nav-placeholder {
     position: fixed;
     top: 1rem;
