@@ -1,4 +1,6 @@
 'use strict';
+import { sanitizeId } from './utils.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   const SERVERS = [
     { id: 'ltn1', name: 'ltn1', api: 'https://ltn1.lynnternet.cloud/api/stats', description: 'Plex media server', services: 'plex' },
@@ -26,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const UPLOAD_COLOR = 'rgb(255, 99, 132)';
 
   const makeAlpha = (color, a) => color.replace('rgb', 'rgba').replace(')', `, ${a})`);
-  const sanitizeId = s => String(s).trim().replace(/[^\w-]+/g, '-');
   const setText = (el, t) => { if (el && el.textContent !== t) el.textContent = t; };
 
   let writeQueue = [];
