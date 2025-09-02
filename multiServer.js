@@ -346,7 +346,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateAPIStatus(s, status, message) {
     const ind = document.getElementById(`${s.id}-status-indicator`);
-    const txt = document.getElementById(`${s.id}-status-text`);
     const chip = document.getElementById(`${s.id}-api-status`);
     const section = document.getElementById(`${s.id}-section`);
     const mobileTile = document.getElementById(`${s.id}-mobile-tile`);
