@@ -200,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="api-status" id="${s.id}-api-status" aria-live="polite">
           <div class="status-indicator" id="${s.id}-status-indicator"></div>
           <span class="status-text" aria-hidden="true">${s.name}</span>
-          <span class="status-text" id="${s.id}-status-text">Connexion…</span>
         </div>
       </a>`;
   }
