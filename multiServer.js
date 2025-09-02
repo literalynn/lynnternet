@@ -200,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="api-status" id="${s.id}-api-status" aria-live="polite">
           <div class="status-indicator" id="${s.id}-status-indicator"></div>
           <span class="status-text" aria-hidden="true">${s.name}</span>
+          <span class="status-text" id="${s.id}-status-text">Connexion…</span>
         </div>
       </a>`;
   }
@@ -348,6 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ind = document.getElementById(`${s.id}-status-indicator`);
     const chip = document.getElementById(`${s.id}-api-status`);
     const section = document.getElementById(`${s.id}-section`);
+    const txt = document.getElementById(`${s.id}-status-text`);
     const mobileTile = document.getElementById(`${s.id}-mobile-tile`);
     const mobileTxt = document.getElementById(`${s.id}-mobile-tile-text`);
     const cssColor = STATUS_COLOR[status] || STATUS_COLOR.error;
