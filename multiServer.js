@@ -99,6 +99,23 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   if (window.Chart) { Chart.register(glowLinePlugin, fadeLeftPlugin); }
 
+  const pendingChartUpdates = new Set();
+  let chartFlushScheduled = false;
+
+  function scheduleChartUpdate(chart) {
+    if (!chart) return;
+    pendingChartUpdates.add(chart);
+    if (chartFlushScheduled) return;
+    chartFlushScheduled = true;
+    requestAnimationFrame(() => {
+      chartFlushScheduled = false;
+      pendingChartUpdates.forEach(ch => {
+        try { ch.update('none'); } catch {}
+      });
+      pendingChartUpdates.clear();
+    });
+  }
+
   function createChartConfig(mainColor) {
     return {
       type: 'line',
@@ -313,7 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const n = datasets[0]?.length || 0;
     chart.data.labels = Array(n).fill('');
     datasets.forEach((ds, i) => { chart.data.datasets[i].data = ds; });
-    chart.update('none');
+    scheduleChartUpdate(chart);
   }
 
   function appendPoint(chart, dsIndex, value, max) {
@@ -323,7 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (ds.data.length > max) ds.data.shift();
     if (chart.data.labels.length < ds.data.length) chart.data.labels.push('');
     if (chart.data.labels.length > ds.data.length) chart.data.labels.shift();
-    chart.update('none');
+    scheduleChartUpdate(chart);
   }
 
   function fetchJSON(url, { timeout = CFG.FETCH_TIMEOUT_MS, signal } = {}) {
