@@ -301,7 +301,7 @@ a:focus-visible,
     font-size: 0.85rem; font-weight: 500;
     color: var(--c-text-secondary);
     transition: color var(--transition-speed) var(--transition-ease);
-    display: none;
+    display: inline;
 }
 .status-text.connected,
 .status-text.error {
