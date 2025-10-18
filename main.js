@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     Promise.allSettled([
-      fetch('nav.html').then(r => r.ok ? r.text() : Promise.reject('nav')),
-      fetch('footer.html').then(r => r.ok ? r.text() : Promise.reject('footer'))
+      fetch('/nav.html').then(r => r.ok ? r.text() : Promise.reject('nav')),
+      fetch('/footer.html').then(r => r.ok ? r.text() : Promise.reject('footer'))
     ]).then(([navRes, footerRes]) => {
       const navPh = document.getElementById('nav-placeholder');
       const footPh = document.getElementById('footer-placeholder');
