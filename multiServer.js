@@ -3,9 +3,9 @@ import { sanitizeId } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const SERVERS = [
-    { id: 'ltn3', name: 'ltn3', api: 'https://api.ly.hn/ltn3/stats', description: 'Main server', services: 'media' },
-    { id: 'ltn1', name: 'ltn1', api: 'https://api.ly.hn/ltn2/stats', description: 'NAS', services: 'nas' },
-    { id: 'ltn0', name: 'ltn0', api: 'https://api.ly.hn/ltn1/stats', description: 'Proxy', services: 'proxy' }
+    { id: 'ltn3', name: 'ltn3', api: 'https://api.lynn.paris/ltn3/stats', description: 'Main server', services: 'media' },
+    { id: 'ltn1', name: 'ltn1', api: 'https://api.lynn.paris/ltn2/stats', description: 'NAS', services: 'nas' },
+    { id: 'ltn0', name: 'ltn0', api: 'https://api.lynn.paris/ltn1/stats', description: 'Proxy', services: 'proxy' }
   ];
 
   const CFG = Object.freeze({
@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const onAbort = () => ctrl.abort();
     if (outerSignal) outerSignal.addEventListener('abort', onAbort, { once: true });
     const timeoutId = setTimeout(() => ctrl.abort(), timeout);
-    const p = fetch(url, { method: 'GET', credentials: 'include', signal: ctrl.signal })
+    const p = fetch(url, { method: 'GET', signal: ctrl.signal })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .finally(() => {
         clearTimeout(timeoutId);
