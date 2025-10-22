@@ -3,9 +3,9 @@ import { sanitizeId } from './utils.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const SERVERS = [
-    { id: 'ltn3', name: 'ltn3', api: 'https://ltn3.lynnternet.cloud/api/stats', description: 'Main server', services: 'media' },
-    { id: 'ltn1', name: 'ltn1', api: 'https://ltn1.lynnternet.cloud/api/stats', description: 'NAS', services: 'nas' },
-    { id: 'ltn0', name: 'ltn0', api: 'https://ltn0.lynnternet.cloud/api/stats', description: 'Proxy', services: 'proxy' }
+    { id: 'ltn3', name: 'ltn3', api: 'https://api.ly.hn/ltn3/stats', description: 'Main server', services: 'media' },
+    { id: 'ltn1', name: 'ltn1', api: 'https://api.ly.hn/ltn2/stats', description: 'NAS', services: 'nas' },
+    { id: 'ltn0', name: 'ltn0', api: 'https://api.ly.hn/ltn1/stats', description: 'Proxy', services: 'proxy' }
   ];
 
   const CFG = Object.freeze({
