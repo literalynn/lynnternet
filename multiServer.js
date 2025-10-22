@@ -350,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const onAbort = () => ctrl.abort();
     if (outerSignal) outerSignal.addEventListener('abort', onAbort, { once: true });
     const timeoutId = setTimeout(() => ctrl.abort(), timeout);
-    const p = fetch(url, { method: 'GET', signal: ctrl.signal })
+    const p = fetch(url, { method: 'GET', credentials: 'include', signal: ctrl.signal })
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .finally(() => {
         clearTimeout(timeoutId);
