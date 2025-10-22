@@ -17,19 +17,24 @@ document.addEventListener('DOMContentLoaded', () => {
   
     function setActiveNavLink() {
       const navLinks = document.querySelectorAll('.nav-link');
-      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      let current = location.pathname.split('/').pop().toLowerCase();
+      if (!current) current = 'index';
+      current = current.replace(/\.html$/, '');
       navLinks.forEach(link => {
         link.classList.remove('active');
-        const page = (link.getAttribute('href') || '').toLowerCase();
-        if (!page) return;
-        if (((current === '' || current === 'index.html') && page.includes('index')) || current === page) {
+        link.removeAttribute('aria-current');
+        const href = (link.getAttribute('href') || '').toLowerCase();
+        const page = href.replace(/\/$/, '').replace(/.*\//, '').replace(/\.html$/, '');
+        if (
+          (current === page) ||
+          (current === 'index' && (page === '' || page === 'index'))
+        ) {
           link.classList.add('active');
           link.setAttribute('aria-current', 'page');
-        } else {
-          link.removeAttribute('aria-current');
         }
       });
     }
+    
   
     function enhanceAccessibility() {
       let usedKeyboard = false;
