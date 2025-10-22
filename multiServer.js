@@ -371,7 +371,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const cssColor = STATUS_COLOR[status] || STATUS_COLOR.error;
 
     scheduleWrite(() => {
-      if (ind && txt) { ind.className = 'status-indicator'; txt.className = 'status-text'; ind.classList.add(status); txt.classList.add(status); setText(txt, message); }
+      if (ind && txt) {
+        ind.className = 'status-indicator';
+        txt.className = 'status-text';
+        ind.classList.add(status);
+        txt.classList.add(status);
+
+        const shouldShowMessage = status !== 'connected';
+        if (shouldShowMessage) {
+          txt.hidden = false;
+          setText(txt, message);
+        } else {
+          txt.hidden = true;
+          setText(txt, '');
+        }
+      }
       if (chip) { chip.className = 'api-status'; chip.classList.add(status); chip.style.setProperty('--server-status-color', cssColor); }
       if (section) { section.classList.remove('connected', 'error', 'connecting'); section.classList.add(status); section.style.setProperty('--server-status-color', cssColor); }
       if (mobileTile) {
