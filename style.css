@@ -301,7 +301,6 @@ a:focus-visible,
     font-size: 0.85rem; font-weight: 500;
     color: var(--c-text-secondary);
     transition: color var(--transition-speed) var(--transition-ease);
-    display: inline;
 }
 .status-text.connected,
 .status-text.error {
@@ -632,8 +631,6 @@ a:focus-visible,
     .server-section.error .status-grid,
     .server-section.connecting .status-grid { min-height: 140px; }
 }
-
-.stat-card, .service-button { contain: content; }
 
 @media (prefers-reduced-motion: reduce) {
   .progress-bar, .progress-bar-shadow, .stat-card, .service-button {
