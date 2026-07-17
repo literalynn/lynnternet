@@ -1,88 +1,93 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const abs = (p) => new URL(p, window.location.origin).toString();
+  const abs = (p) => new URL(p, window.location.origin).toString();
+  const fetchFragment = (path) =>
+    fetch(abs(path)).then(r => r.ok ? r.text() : Promise.reject(path))
+      .catch(() => fetch(abs(path + '.html')).then(r => r.ok ? r.text() : Promise.reject(path)));
 
-    Promise.allSettled([
-      fetch(abs('/nav')).then(r => r.ok ? r.text() : Promise.reject('nav')),
-      fetch(abs('/footer')).then(r => r.ok ? r.text() : Promise.reject('footer'))
-    ]).then(([navRes, footerRes]) => {
-      const navPh  = document.getElementById('nav-placeholder');
-      const footPh = document.getElementById('footer-placeholder');
-      if (navRes.status === 'fulfilled' && navPh)   navPh.innerHTML  = navRes.value;
-      else if (navPh) navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
-      if (footerRes.status === 'fulfilled' && footPh) footPh.innerHTML = footerRes.value;
-      else if (footPh) footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
-      setActiveNavLink();
-      enhanceAccessibility();
-    });
-  
-    function setActiveNavLink() {
-      const navLinks = document.querySelectorAll('.nav-link');
-      let current = location.pathname.split('/').pop().toLowerCase();
-      if (!current) current = 'index';
-      current = current.replace(/\.html$/, '');
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        link.removeAttribute('aria-current');
-        const href = (link.getAttribute('href') || '').toLowerCase();
-        const page = href.replace(/\/$/, '').replace(/.*\//, '').replace(/\.html$/, '');
-        if (
-          (current === page) ||
-          (current === 'index' && (page === '' || page === 'index'))
-        ) {
-          link.classList.add('active');
-          link.setAttribute('aria-current', 'page');
-        }
-      });
-    }
-    
-  
-    function enhanceAccessibility() {
-      let usedKeyboard = false;
-      window.addEventListener('keydown', e => { if (e.key === 'Tab') usedKeyboard = true; });
-      window.addEventListener('pointerdown', () => {
-        usedKeyboard = false;
-        const active = document.activeElement;
-        if (active && active.classList) active.classList.remove('focus-visible');
-      });
-      document.addEventListener('focusin', e => {
-        if (!usedKeyboard) return;
-        const el = e.target;
-        if (el.matches('a, button, [role="button"], .service-button')) el.classList.add('focus-visible');
-      });
-      document.addEventListener('focusout', e => { const el = e.target; if (el && el.classList) el.classList.remove('focus-visible'); });
-    }
+  Promise.allSettled([
+    fetchFragment('/nav'),
+    fetchFragment('/footer')
+  ]).then(([navRes, footerRes]) => {
+    const navPh = document.getElementById('nav-placeholder');
+    const footPh = document.getElementById('footer-placeholder');
+    if (navRes.status === 'fulfilled' && navPh) navPh.innerHTML = navRes.value;
+    else if (navPh) navPh.innerHTML = '<nav aria-label="Navigation"><p>Nav indisponible</p></nav>';
+    if (footerRes.status === 'fulfilled' && footPh) footPh.innerHTML = footerRes.value;
+    else if (footPh) footPh.innerHTML = '<footer><p>Pied de page indisponible</p></footer>';
+    setActiveNavLink();
+    enhanceAccessibility();
   });
-  
-  (function () {
-    const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const SEL = '.stat-card:not(.loading-tile), .service-button';
-    const scheduled = new WeakMap();
-    function paint(card, e) {
-      if (prefersReduced) return;
-      const r = card.getBoundingClientRect();
-      const x = e.clientX - r.left, y = e.clientY - r.top;
-      const cx = x - r.width / 2, cy = y - r.height / 2;
-      const rx = (cy / r.height) * -5, ry = (cx / r.width) * 5;
-      const ang = (Math.atan2(cy, cx) * 180 / Math.PI + 450) % 360;
-      card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-      card.style.setProperty('--spotlight-x', `${x}px`);
-      card.style.setProperty('--spotlight-y', `${y}px`);
-      card.style.setProperty('--grad-angle', `${ang}deg`);
-    }
-    document.addEventListener('pointermove', (e) => {
-      const card = e.target.closest(SEL);
-      if (!card) return;
-      if (scheduled.get(card)) return;
-      scheduled.set(card, true);
-      requestAnimationFrame(() => { scheduled.set(card, false); paint(card, e); });
-    }, { passive: true });
-    document.addEventListener('pointerleave', (e) => {
-      const card = e.target.closest(SEL);
-      if (!card) return;
-      card.style.transform = '';
-      card.style.setProperty('--spotlight-x', '-999px');
-      card.style.setProperty('--spotlight-y', '-999px');
-      card.style.setProperty('--grad-angle', '200deg');
-    }, true);
-  })();
-  // by Lynn with <3 cloud.lynn.paris
+
+  function setActiveNavLink() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    let current = location.pathname.split('/').pop().toLowerCase();
+    if (!current) current = 'index';
+    current = current.replace(/\.html$/, '');
+    navLinks.forEach(link => {
+      link.classList.remove('active');
+      link.removeAttribute('aria-current');
+      const href = (link.getAttribute('href') || '').toLowerCase();
+      const page = href.replace(/\/$/, '').replace(/.*\//, '').replace(/\.html$/, '');
+      if (
+        (current === page) ||
+        (current === 'index' && (page === '' || page === 'index'))
+      ) {
+        link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
+      }
+    });
+  }
+
+  function enhanceAccessibility() {
+    let usedKeyboard = false;
+    window.addEventListener('keydown', e => { if (e.key === 'Tab') usedKeyboard = true; });
+    window.addEventListener('pointerdown', () => {
+      usedKeyboard = false;
+      const active = document.activeElement;
+      if (active && active.classList) active.classList.remove('focus-visible');
+    });
+    document.addEventListener('focusin', e => {
+      if (!usedKeyboard) return;
+      const el = e.target;
+      if (el.matches('a, button, [role="button"], .service-button')) el.classList.add('focus-visible');
+    });
+    document.addEventListener('focusout', e => { const el = e.target; if (el && el.classList) el.classList.remove('focus-visible'); });
+  }
+});
+
+(function () {
+  const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const SEL = '.service-button';
+  const scheduled = new WeakMap();
+
+  function paint(card, e) {
+    if (prefersReduced) return;
+    const r = card.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const cx = x - r.width / 2, cy = y - r.height / 2;
+    const rx = (cy / r.height) * -5, ry = (cx / r.width) * 5;
+    const ang = (Math.atan2(cy, cx) * 180 / Math.PI + 450) % 360;
+    card.style.transform = `perspective(600px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    card.style.setProperty('--spotlight-x', `${x}px`);
+    card.style.setProperty('--spotlight-y', `${y}px`);
+    card.style.setProperty('--grad-angle', `${ang}deg`);
+  }
+
+  document.addEventListener('pointermove', (e) => {
+    const card = e.target.closest(SEL);
+    if (!card) return;
+    if (scheduled.get(card)) return;
+    scheduled.set(card, true);
+    requestAnimationFrame(() => { scheduled.set(card, false); paint(card, e); });
+  }, { passive: true });
+
+  document.addEventListener('pointerleave', (e) => {
+    const card = e.target.closest(SEL);
+    if (!card) return;
+    card.style.transform = '';
+    card.style.setProperty('--spotlight-x', '-999px');
+    card.style.setProperty('--spotlight-y', '-999px');
+    card.style.setProperty('--grad-angle', '200deg');
+  }, true);
+})();
+// by Lynn with <3 cloud.lynn.paris

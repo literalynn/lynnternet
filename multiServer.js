@@ -45,6 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function persistSession(key, value) { try { sessionStorage.setItem(key, JSON.stringify(value)); } catch {} }
   function loadSession(key) { try { const v = sessionStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; } }
+  function loadHistory(key) { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
+
+  function escapeHTML(str) {
+    return String(str).replace(/[&<>"']/g, ch => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[ch]));
+  }
 
   function createBiaxialFillPattern(chart, area, color, { topAlpha = 0.25, fadeRatio = 0.4 } = {}) {
     const off = document.createElement('canvas');
@@ -128,16 +135,12 @@ document.addEventListener('DOMContentLoaded', () => {
         animation: prefersReduced ? false : { duration: 0 },
         responsive: true, maintainAspectRatio: false,
         scales: {
-          y: { beginAtZero: true, max: 100, ticks: { color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.08)', drawBorder: false } },
-          x: { ticks: { display: false }, grid: { display: false } }
+          y: { beginAtZero: true, max: 100, ticks: { display: false }, grid: { display: false }, border: { display: false } },
+          x: { ticks: { display: false }, grid: { display: false }, border: { display: false } }
         },
         plugins: {
           legend: { display: false },
-          tooltip: {
-            enabled: true, mode: 'index', intersect: false,
-            backgroundColor: 'rgba(12,12,12,0.5)', titleColor: '#fff', bodyColor: '#fff',
-            padding: 10, cornerRadius: 16, borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1
-          },
+          tooltip: { enabled: false },
           glow: { shadowBlur: prefersReduced ? 0 : 24 },
           fadeLeft: { fadeRatio: 0.4 }
         }
@@ -158,10 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
   function serverSectionHTML(s) {
     return `
       <section class="server-section" id="${s.id}-section" data-server-id="${s.id}">
-        <header class="server-header">
-          <h2 class="server-title">${s.name}</h2>
-          <p class="server-subtitle">${s.description}</p>
-        </header>
         <div class="status-grid" id="${s.id}-status-grid">
           <div class="grid-overlay" id="${s.id}-grid-overlay" aria-live="polite" aria-hidden="true">
             <div class="overlay-content">
@@ -178,16 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="stat-card">
-            <div class="card-title"><h3>CPU</h3><span id="${s.id}-cpu-value-text" class="card-value-text"></span></div>
             <div class="chart-container"><canvas id="${s.id}-cpuChart"></canvas></div>
+            <div class="card-title"><span id="${s.id}-cpu-value-text" class="card-value-text"></span><h3>CPU</h3></div>
           </div>
           <div class="stat-card">
-            <div class="card-title"><h3>RAM</h3><span id="${s.id}-ram-value-text" class="card-value-text"></span></div>
             <div class="chart-container"><canvas id="${s.id}-ramChart"></canvas></div>
+            <div class="card-title"><span id="${s.id}-ram-value-text" class="card-value-text"></span><h3>RAM</h3></div>
           </div>
           <div class="stat-card">
+            <div class="chart-container"><canvas id="${s.id}-networkChart"></canvas></div>
             <div class="card-title">
-              <h3>Réseau</h3>
               <div class="card-value-network">
                 <span class="network-rates">
                   <span id="${s.id}-network-down">↓ 0.0</span>
@@ -195,18 +194,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
                 <span class="network-unit">Mbps</span>
               </div>
+              <h3>Réseau</h3>
             </div>
-            <div class="chart-container"><canvas id="${s.id}-networkChart"></canvas></div>
           </div>
           <div class="stat-card">
-            <div class="card-title"><h3>Stockage</h3><span id="${s.id}-storage-total-text" class="card-value-text"></span></div>
             <div id="${s.id}-storage-list" class="storage-list-container" data-server-id="${s.id}">
               <div class="loading-state" id="${s.id}-loading-disks">
                 <div class="loading-spinner"></div><span>Chargement des disques...</span>
               </div>
             </div>
+            <div class="card-title"><span id="${s.id}-storage-total-text" class="card-value-text"></span><h3>Stockage</h3></div>
           </div>
         </div>
+        <header class="server-header">
+          <span class="server-status-dot" aria-hidden="true"></span>
+          <h2 class="server-title">${s.name}</h2>
+          <span class="server-sep" aria-hidden="true">—</span>
+          <p class="server-subtitle">${s.description}</p>
+        </header>
       </section>`;
   }
 
@@ -229,10 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const ls = (k) => `${s.id}_${k}`;
     if (states[s.id]) return states[s.id];
     const st = states[s.id] = {
-      cpuHistory: JSON.parse(localStorage.getItem(ls('cpuHistory'))) || [],
-      ramHistory: JSON.parse(localStorage.getItem(ls('ramHistory'))) || [],
-      netDownHistory: JSON.parse(localStorage.getItem(ls('netDownHistory'))) || [],
-      netUpHistory: JSON.parse(localStorage.getItem(ls('netUpHistory'))) || [],
+      cpuHistory: loadHistory(ls('cpuHistory')),
+      ramHistory: loadHistory(ls('ramHistory')),
+      netDownHistory: loadHistory(ls('netDownHistory')),
+      netUpHistory: loadHistory(ls('netUpHistory')),
       charts: {},
       retryCount: 0,
       isConnected: false,
@@ -247,13 +252,19 @@ document.addEventListener('DOMContentLoaded', () => {
         storageText: document.getElementById(`${s.id}-storage-total-text`),
         loading: document.getElementById(`${s.id}-loading-disks`),
         storageList: document.getElementById(`${s.id}-storage-list`),
-        overlay: document.getElementById(`${s.id}-grid-overlay`)
+        statusIndicator: document.getElementById(`${s.id}-status-indicator`),
+        apiStatusChip: document.getElementById(`${s.id}-api-status`),
+        section: document.getElementById(`${s.id}-section`),
+        statusText: document.getElementById(`${s.id}-status-text`),
+        mobileTile: document.getElementById(`${s.id}-mobile-tile`),
+        mobileTileText: document.getElementById(`${s.id}-mobile-tile-text`)
       },
       persistTick: 0,
       backoffMs: 0,
       nextAllowedAt: 0,
       controller: null
     };
+    st.elements.mobileTileIcon = st.elements.mobileTile?.querySelector('.tile-icon') || null;
     return st;
   }
 
@@ -269,10 +280,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function saveHistory(s, st) {
     const ls = k => `${s.id}_${k}`;
-    localStorage.setItem(ls('cpuHistory'), JSON.stringify(st.cpuHistory));
-    localStorage.setItem(ls('ramHistory'), JSON.stringify(st.ramHistory));
-    localStorage.setItem(ls('netDownHistory'), JSON.stringify(st.netDownHistory));
-    localStorage.setItem(ls('netUpHistory'), JSON.stringify(st.netUpHistory));
+    try {
+      localStorage.setItem(ls('cpuHistory'), JSON.stringify(st.cpuHistory));
+      localStorage.setItem(ls('ramHistory'), JSON.stringify(st.ramHistory));
+      localStorage.setItem(ls('netDownHistory'), JSON.stringify(st.netDownHistory));
+      localStorage.setItem(ls('netUpHistory'), JSON.stringify(st.netUpHistory));
+    } catch {}
   }
 
   function patternFill(mainColor, opts) {
@@ -362,12 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateAPIStatus(s, status, message) {
-    const ind = document.getElementById(`${s.id}-status-indicator`);
-    const chip = document.getElementById(`${s.id}-api-status`);
-    const section = document.getElementById(`${s.id}-section`);
-    const txt = document.getElementById(`${s.id}-status-text`);
-    const mobileTile = document.getElementById(`${s.id}-mobile-tile`);
-    const mobileTxt = document.getElementById(`${s.id}-mobile-tile-text`);
+    const { statusIndicator: ind, apiStatusChip: chip, section, statusText: txt, mobileTile, mobileTileText: mobileTxt } = stateFor(s).elements;
     const cssColor = STATUS_COLOR[status] || STATUS_COLOR.error;
 
     scheduleWrite(() => {
@@ -389,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (chip) { chip.className = 'api-status'; chip.classList.add(status); chip.style.setProperty('--server-status-color', cssColor); }
       if (section) { section.classList.remove('connected', 'error', 'connecting'); section.classList.add(status); section.style.setProperty('--server-status-color', cssColor); }
       if (mobileTile) {
-        const icon = mobileTile.querySelector('.tile-icon');
+        const icon = stateFor(s).elements.mobileTileIcon;
         if (mobileTxt) setText(mobileTxt, status === 'error' ? 'Hors ligne' : status === 'connecting' ? 'Connexion…' : 'Connecté');
         if (icon) icon.textContent = status === 'connected' ? '✅' : status === 'error' ? '⚠️' : '⏳';
         mobileTile.setAttribute('aria-hidden', status === 'connected' ? 'true' : 'false');
@@ -509,17 +517,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function diskEntryHTML(d, serverId) {
     if (d.error) return '';
     const safe = sanitizeId(d.name);
+    const name = escapeHTML(d.name);
+    const used = escapeHTML(d.used_tb);
+    const total = escapeHTML(d.total_tb);
+    const percent = Math.max(0, Math.min(100, +d.percent) || 0);
     return `
       <div class="disk-entry" id="${serverId}-disk-${safe}">
         <div class="disk-info-header">
-          <span class="disk-name">${d.name}</span>
+          <span class="disk-name">${name}</span>
           <span class="disk-value">
-            <span class="used">${d.used_tb}</span><span class="sep" style="color: var(--c-accent-primary);"> / </span><span class="total">${d.total_tb}</span> <span class="unit">To</span>
+            <span class="used">${used}</span><span class="sep" style="color: var(--c-accent-primary);"> / </span><span class="total">${total}</span> <span class="unit">To</span>
           </span>
         </div>
         <div class="progress-bar-container">
-          <div class="progress-bar" style="width: ${d.percent}%;"></div>
-          <div class="progress-bar-shadow" style="width: ${d.percent}%;"></div>
+          <div class="progress-bar" style="width: ${percent}%;"></div>
+          <div class="progress-bar-shadow" style="width: ${percent}%;"></div>
         </div>
       </div>`;
   }
